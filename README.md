@@ -41,13 +41,76 @@ The following dependencies are required. Examples are provided for Arch Linux, b
 
 ### Building the Project
 
-1.  Navigate to the desired implementation directory: `src/mpi` for CPU or `src/cuda` for GPU.
-2.  Open the `Makefile` and update the `LAMMPS_PATH` variable to point to your LAMMPS installation directory.
-3.  Run the build command:
+Two build systems are supported: **CMake** (recommended) and the legacy **Makefiles**.
+
+---
+
+#### Option A — CMake (Recommended)
+
+CMake 3.18 or later is required. 
+**1. Configure**
+
+```bash
+cmake -S src -B build -DLAMMPS_PATH=/path/to/lammps/src
+```
+
+Replace `/path/to/lammps/src` with the actual path to your LAMMPS `src` directory
+(the folder that contains `lammps.h`). This value is required; omitting it will
+produce a clear error at configure time.
+
+Additional CMake options:
+
+| Option | Default | Description |
+|---|---|---|
+| `LAMMPS_PATH` | *(required)* | Path to the LAMMPS `src` directory |
+| `BUILD_MPI` | `ON` | Build the MPI version (`selm_mpi`) |
+| `BUILD_CUDA` | `ON` | Build the CUDA version (`selm_cuda`) |
+| `CMAKE_CUDA_ARCHITECTURES` | auto-detected | Override the GPU arch (e.g. `86` for Ampere) |
+
+Examples:
+
+```bash
+# Build both targets (default)
+cmake -S src -B build -DLAMMPS_PATH=$HOME/lammps-22Jul2025/src
+
+# Build only the MPI version
+cmake -S src -B build -DLAMMPS_PATH=$HOME/lammps-22Jul2025/src -DBUILD_CUDA=OFF
+
+# Build only the CUDA version
+cmake -S src -B build -DLAMMPS_PATH=$HOME/lammps-22Jul2025/src -DBUILD_MPI=OFF
+
+# Override GPU architecture manually (e.g. for cross-compilation)
+cmake -S src -B build -DLAMMPS_PATH=$HOME/lammps-22Jul2025/src \
+      -DCMAKE_CUDA_ARCHITECTURES=86
+```
+
+**2. Compile**
+
+```bash
+cmake --build build -j$(nproc)
+```
+
+The executables `selm_mpi` and/or `selm_cuda` are placed in the `build/` directory
+(under `build/mpi/` and `build/cuda/` respectively).
+
+**3. Clean**
+
+```bash
+rm -rf build/
+```
+
+---
+
+#### Option B — Legacy Makefiles
+
+1. Navigate to the desired implementation directory: `src/mpi` for CPU or `src/cuda` for GPU.
+2. Open the `Makefile` and update the `LAMMPS_PATH` variable to point to your LAMMPS `src` directory.
+3. Run the build command:
     ```bash
     make
     ```
-This will generate the executable `selm_mpi` or `selm_cuda`.
+
+This will generate the executable `selm_mpi` or `selm_cuda` in the same directory.
 
 ---
 
